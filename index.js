@@ -3,7 +3,7 @@ const { DisTube } = require('distube');
 const { YouTubePlugin } = require('@distube/youtube');
 const express = require('express');
 
-// سيرفر إبقاء البوت شغال 24/7
+// سيرفر إبقاء البوت شغال 24/7 على Render
 const app = express();
 app.get('/', (req, res) => res.send('Bot is Live!'));
 app.listen(process.env.PORT || 3000, () => console.log('Server is running!'));
@@ -13,8 +13,8 @@ const client = new Client({
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildVoiceStates,
         GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-    ],
+        GatewayIntentBits.MessageContent
+    ]
 });
 
 // إعداد DisTube مع الملحق المحدث لليوتيوب
@@ -31,29 +31,36 @@ client.on('ready', () => {
 });
 
 client.on('messageCreate', async message => {
-    if (message.author.bot || !message.guild) return;
-    if (!message.content.startsWith(PREFIX)) return;
+    if (!message.content.startsWith(PREFIX) || message.author.bot) return;
 
-    const args = message.content.slice(PREFIX.length).trim().split(/ +/g);
+    const args = message.content.slice(PREFIX.length).trim().split(/ +/);
     const command = args.shift().toLowerCase();
-
     const voiceChannel = message.member.voice.channel;
 
-    if (command === 'play' || command === 'p') {
-        if (!voiceChannel) return message.channel.send('❌ لازم تكون في روم صوتي!');
-        const music = args.join(' ');
-        if (!music) return message.channel.send('❌ اكتب اسم الأغنية أو الرابط!');
+    if (command === 'play') {
+        const query = args.join(' ');
+        if (!query) return message.channel.send('❌ اكتب اسم الأغنية أو الرابط!');
+        if (!voiceChannel) return message.channel.send('❌ لازم تكون في روم صوتي أولاً!');
 
-        client.distube.play(voiceChannel, music, {
-            textChannel: message.channel,
-            member: message.member,
-        });
+        try {
+            await client.distube.play(voiceChannel, query, {
+                textChannel: message.channel,
+                member: message.member,
+            });
+        } catch (error) {
+            console.error(error);
+            message.channel.send(`❌ حدث خطأ: ${error.message}`);
+        }
     }
 
     if (command === 'stop') {
         if (!voiceChannel) return message.channel.send('❌ لازم تكون في نفس الروم!');
-        await client.distube.stop(message.guild);
-        message.channel.send('⏹️ تم إيقاف التشغيل!');
+        try {
+            await client.distube.stop(message.guild);
+            message.channel.send('⏹️ تم إيقاف التشغيل!');
+        } catch (error) {
+            message.channel.send('❌ لا توجد أغنية شغالة حالياً!');
+        }
     }
 
     if (command === 'skip') {
@@ -61,8 +68,8 @@ client.on('messageCreate', async message => {
         try {
             await client.distube.skip(message.guild);
             message.channel.send('⏭️ تم تخطي الأغنية!');
-        } catch (e) {
-            message.channel.send('❌ ما فيه أغاني ثانية بالقائمة!');
+        } catch (error) {
+            message.channel.send('❌ ما فيه أغنية بعدها!');
         }
     }
 });
