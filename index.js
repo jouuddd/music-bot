@@ -64,4 +64,5 @@ client.on('messageCreate', async message => {
     }
 });
 
-client.login('ضع_التوكن_الخاص_ببوتك_هنا');
+client.login(process.env.TOKEN);
+
