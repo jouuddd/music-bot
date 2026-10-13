@@ -1,11 +1,12 @@
 const { Client, GatewayIntentBits } = require('discord.js');
 const { DisTube } = require('distube');
+const { YouTubePlugin } = require('@distube/youtube');
 const express = require('express');
 
-// سيرفر وهمي لإبقاء البوت شغال 24/7 على Render
+// سيرفر إبقاء البوت شغال 24/7
 const app = express();
-app.get('/', (req, res) => res.send('Bot is online!'));
-app.listen(process.env.PORT || 3000, () => console.log('Web server ready!'));
+app.get('/', (req, res) => res.send('Bot is Live!'));
+app.listen(process.env.PORT || 3000, () => console.log('Server is running!'));
 
 const client = new Client({
     intents: [
@@ -16,15 +17,17 @@ const client = new Client({
     ],
 });
 
+// إعداد DisTube مع الملحق المحدث لليوتيوب
 client.distube = new DisTube(client, {
     emitNewSongOnly: true,
     leaveOnFinish: false,
+    plugins: [new YouTubePlugin()],
 });
 
 const PREFIX = '!';
 
 client.on('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`);
+    console.log(`✅ Logged in successfully as ${client.user.tag}!`);
 });
 
 client.on('messageCreate', async message => {
@@ -48,13 +51,13 @@ client.on('messageCreate', async message => {
     }
 
     if (command === 'stop') {
-        if (!voiceChannel) return message.channel.send('❌ لازم تكون في بنفس الروم!');
+        if (!voiceChannel) return message.channel.send('❌ لازم تكون في نفس الروم!');
         await client.distube.stop(message.guild);
         message.channel.send('⏹️ تم إيقاف التشغيل!');
     }
 
     if (command === 'skip') {
-        if (!voiceChannel) return message.channel.send('❌ لازم تكون في بنفس الروم!');
+        if (!voiceChannel) return message.channel.send('❌ لازم تكون في نفس الروم!');
         try {
             await client.distube.skip(message.guild);
             message.channel.send('⏭️ تم تخطي الأغنية!');
@@ -64,5 +67,5 @@ client.on('messageCreate', async message => {
     }
 });
 
-// استخدام متغير البيئة للتوكن (أضمن وأمن طريقة)
+// قراءة التوكن من متغير البيئة
 client.login(process.env.DISCORD_TOKEN);
