@@ -2,7 +2,7 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const { DisTube } = require('distube');
 const express = require('express');
 
-// إنشاء سيرفر وهمي يبقي البوت شغال 24/7 على Render
+// سيرفر وهمي لإبقاء البوت شغال 24/7 على Render
 const app = express();
 app.get('/', (req, res) => res.send('Bot is online!'));
 app.listen(process.env.PORT || 3000, () => console.log('Web server ready!'));
@@ -64,4 +64,5 @@ client.on('messageCreate', async message => {
     }
 });
 
+// استخدام متغير البيئة للتوكن (أضمن وأمن طريقة)
 client.login(process.env.DISCORD_TOKEN);
