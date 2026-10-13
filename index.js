@@ -64,4 +64,4 @@ client.on('messageCreate', async message => {
     }
 });
 
-client.login('حط_التوكن_هنا');
+client.login('ضع_التوكن_الخاص_ببوتك_هنا');
